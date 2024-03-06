@@ -48,4 +48,87 @@ describe('Books API', () => {
             done();
         });
     });
+
+    it('should GET all books', (done) => {
+        chai.request(server)
+        .get('/books')
+        .end((err, resp) => {
+            if(err) {
+                return done(err)
+            }
+            expect(resp).to.have.status(200);
+            expect(resp.body).to.be.a('array');
+            done();
+        })
+    });
+
+    it('should GET a single book', (done) => {
+    
+        chai.request(server)
+        .get(`/books/${bookId}`)
+        .end((err, resp) => {
+            if(err) {
+                return done(err)
+            }
+            expect(resp).to.have.status(200);
+            expect(resp.body).to.be.a('object');
+            expect(resp.body).to.have.property('id');
+            expect(resp.body).to.have.property('title');
+            expect(resp.body).to.have.property('author');
+            done();
+        });
+    });
+
+    
+    it('should PUT an existing book', (done) => {
+        const updatedBook = { id: bookId, title: "Update Test Book", author: "Update Test Author"};
+        chai.request(server)
+        .put(`/books/${bookId}`)
+        .send(updatedBook)
+        .end((err, resp) => {
+            if(err) {
+                return done(err)
+            }
+            expect(resp).to.have.status(200);
+            expect(resp.body).to.be.a('object');
+            expect(resp.body.title).to.equal('Update Test Book');
+            expect(resp.body.author).to.equal('Update Test Author');
+            done();
+        });
+    });
+
+    it('should DELETE an existing book', (done) => {
+        chai.request(server)
+        .delete(`/books/${bookId}`)
+        .end((err, resp) => {
+            if(err) {
+                return done(err)
+            }
+            expect(resp.statusCode, "Status code ").to.equal(204);
+            done();
+        });
+    });
+
+    it('should return 404 when trying to GET, PUT or DELETE a non-existing book', (done) => {
+        const nonExisting = { id: 9999, title: "Non-existing Book", author: "Non-existing Author"};
+        chai.request(server)
+        .get('/books/9999')
+        .end((err, resp) => {
+            expect(resp).to.have.status(404);
+        });
+
+        chai.request(server)
+        .put('/books/9999')
+        .send(nonExisting)
+        .end((err, resp) => {
+            expect(resp).to.have.status(404);
+        });
+
+        chai.request(server)
+        .delete('/books/9999')
+        .end((err, resp) => {
+            expect(resp).to.have.status(404);
+            done();
+        });
+    })
 });
